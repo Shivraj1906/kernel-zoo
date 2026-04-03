@@ -1,0 +1,31 @@
+# Build artifacts
+bin/
+*.o
+*.obj
+*.out
+*.exe
+
+# CUDA / Nsight Compute outputs
+*.ncu-rep
+*.qdrep
+*.sqlite
+profiling/raw_reports/*
+!profiling/raw_reports/.gitkeep
+
+# Experiment outputs
+experiments/plots/*
+!experiments/plots/.gitkeep
+kernels/**/results/*
+!kernels/**/results/.gitkeep
+report/figures/*
+!report/figures/.gitkeep
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Editor / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
