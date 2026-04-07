@@ -20,7 +20,7 @@ run_basic() {
 }
 
 run_full() {
-  sudo ncu \
+  sudo ncu -f \
     --set full \
     --export "profiling/raw_reports/${REPORT_BASENAME}_full_set" \
     "$BINARY_PATH"

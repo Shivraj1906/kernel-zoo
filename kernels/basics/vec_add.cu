@@ -29,10 +29,10 @@ int main() {
 
     constexpr int blockSize = 256;
     const int gridSize = (N + blockSize - 1) / blockSize;
-    vectorAdd<<<gridSize, blockSize>>>(A, B, C, N);
+    vectorAdd<<<gridSize, blockSize>>>(d_A, d_B, d_C, N);
     cudaDeviceSynchronize();
 
-    cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
 
     cudaFree(d_A);
     cudaFree(d_B);
