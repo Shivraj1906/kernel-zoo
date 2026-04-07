@@ -19,7 +19,9 @@ This document is the final synthesis point for profiling-driven CUDA kernel opti
 
 - Element-wise vector addition:
   
+  ```cpp
   C[i] = A[i] + B[i]
+  ```
 
 - Data type: `double` (kept intentionally to see the effects of using FP64 instead of FP32)
 - Access pattern: sequential, fully coalesced
@@ -95,9 +97,12 @@ This document is the final synthesis point for profiling-driven CUDA kernel opti
 ```cpp
 C[idx] = A[idx * 2] + B[idx * 2];
 ```
+
+- Sectors/Req increased from 8 to 16
+- Compute throughput decreased by 38.16%
+- L2 hitrate decreased by 39.95%
+
 ---
-
-
 
 ## Data Sources
 
