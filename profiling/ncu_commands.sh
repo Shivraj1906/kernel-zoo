@@ -2,22 +2,66 @@
 set -euo pipefail
 
 # Nsight Compute command templates.
-# Replace binary paths and output names as implementations become available.
+# Usage: ./profiling/ncu_commands.sh <binary_path> [basic|full|export|csv|all]
 
-# 1) Basic profiling (default section set)
-ncu ./bin/matmul_naive
+if [[ $# -lt 1 ]]; then
+  echo "Usage: $0 <binary_path> [basic|full|export|csv|all]"
+  exit 1
+fi
 
-# 2) Full metric collection (broad pass; can increase overhead)
-ncu --set full ./bin/matmul_naive
+BINARY_PATH="$1"
+MODE="${2:-all}"
+REPORT_BASENAME="$(basename "$BINARY_PATH")"
 
-# 3) Profile specific kernel launches by process and export report
-ncu \
-  --target-processes all \
-  --export profiling/raw_reports/matmul_naive_full \
-  ./bin/matmul_naive
+run_basic() {
+  sudo ncu \
+    --export "profiling/raw_reports/${REPORT_BASENAME}_basic" \
+    "$BINARY_PATH"
+}
 
-# 4) CSV-style extraction example for selected metrics
-ncu \
-  --metrics sm__throughput.avg.pct_of_peak_sustained_elapsed,dram__throughput.avg.pct_of_peak_sustained_elapsed \
-  --csv \
-  ./bin/matmul_naive
+run_full() {
+  sudo ncu \
+    --set full \
+    --export "profiling/raw_reports/${REPORT_BASENAME}_full_set" \
+    "$BINARY_PATH"
+}
+
+run_export() {
+  sudo ncu \
+    --target-processes all \
+    --export "profiling/raw_reports/${REPORT_BASENAME}_full" \
+    "$BINARY_PATH"
+}
+
+run_csv() {
+  sudo ncu \
+    --metrics sm__throughput.avg.pct_of_peak_sustained_elapsed,dram__throughput.avg.pct_of_peak_sustained_elapsed \
+    --csv \
+    "$BINARY_PATH"
+}
+
+case "$MODE" in
+  basic)
+    run_basic
+    ;;
+  full)
+    run_full
+    ;;
+  export)
+    run_export
+    ;;
+  csv)
+    run_csv
+    ;;
+  all)
+    run_basic
+    run_full
+    run_export
+    run_csv
+    ;;
+  *)
+    echo "Unknown mode: $MODE"
+    echo "Expected one of: basic, full, export, csv, all"
+    exit 1
+    ;;
+esac

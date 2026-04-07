@@ -12,7 +12,7 @@ while IFS= read -r src; do
   base="$(basename "${src}" .cu)"
   out="${BIN_DIR}/${base}"
   echo "[build] nvcc ${src} -> ${out}"
-  nvcc -O2 -std=c++17 "${src}" -o "${out}"
+  nvcc -lineinfo -std=c++17 "${src}" -o "${out}"
 done < <(find "${ROOT_DIR}/kernels" -type f -name '*.cu' | sort)
 
 echo "[build] Completed. Binaries are in ${BIN_DIR}" 
