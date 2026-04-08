@@ -18,4 +18,18 @@ double* initialize_matrix_zero(int rows, int cols) {
     return ptr;
 }
 
+float* initialize_matrix_fp32(int rows, int cols) {
+    float *ptr = (float *) malloc(sizeof(float) * rows * cols);
+    for (int i = 0; i < rows * cols; ++i)
+        ptr[i] = static_cast<float>(i % 100);
+    return ptr;
+}
+
+float* initialize_matrix_zero_fp32(int rows, int cols) {
+    float *ptr = (float *) malloc(sizeof(float) * rows * cols);
+    for (int i = 0; i < rows * cols; ++i)
+        ptr[i] = 0.0f;
+    return ptr;
+}
+
 #endif  // CUDA_KERNEL_OPTIMIZATION_UTILS_H
