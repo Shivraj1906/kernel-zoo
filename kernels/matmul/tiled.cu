@@ -1,17 +1,28 @@
+
 #include <cuda_runtime.h>
 
 #include "../../common/utils.h"
 
-__global__ void matmul(float* A, float* B, float* C, int N) {
-    int y = blockDim.x * blockIdx.x + threadIdx.x;
-    int x = blockDim.y * blockIdx.y + threadIdx.y;
+__global__
+void tiled_matmul(float*A, float*B, float*C, int M, int N, int K) {
+    int row = blockDim.y * blockIdx.y + threadIdx.y;
+    int col = blockDim.x * blockIdx.x + threadIdx.x;
 
-    if (x < N && y < N) {
-        float sum = 0.0f;
-        for (int k = 0; k < N; k++) 
-            sum += A[x * N + k] * B[k * N + y];
-        C[x * N + y] = sum;
+    __shared__ float tileA[32][32];
+    __shared__ float tileB[32][32];
+
+    float sum = 0.0;
+    for (int i = 0; i < K; i += 32) {
+        tileA[threadIdx.y][threadIdx.x] = A[row * K + (i + threadIdx.x)];
+        tileB[threadIdx.y][threadIdx.x] = B[(i + threadIdx.y) * N + col];
+        __syncthreads();
+        
+        for (int j = 0; j < 32; j++) {
+            sum += tileA[threadIdx.y][j] * tileB[j][threadIdx.x];
+        }
+        __syncthreads();
     }
+    C[row * N + col] = sum;
 }
 
 int main() {
@@ -34,7 +45,7 @@ int main() {
 
     dim3 blockSize = dim3(32, 32);
     dim3 gridSize = dim3((N + 32 - 1) / 32, (N + 32 - 1) / 32);
-    matmul<<<gridSize, blockSize>>>(d_A, d_B, d_C, N);
+    tiled_matmul<<<gridSize, blockSize>>>(d_A, d_B, d_C, N, N, N);
     cudaDeviceSynchronize();
 
     cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
