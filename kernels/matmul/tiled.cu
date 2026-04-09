@@ -3,21 +3,23 @@
 
 #include "../../common/utils.h"
 
+#define BLOCK_DIM 32
+
 __global__
 void tiled_matmul(float*A, float*B, float*C, int M, int N, int K) {
     int row = blockDim.y * blockIdx.y + threadIdx.y;
     int col = blockDim.x * blockIdx.x + threadIdx.x;
 
-    __shared__ float tileA[32][32];
-    __shared__ float tileB[32][32];
+    __shared__ float tileA[BLOCK_DIM][BLOCK_DIM];
+    __shared__ float tileB[BLOCK_DIM][BLOCK_DIM];
 
     float sum = 0.0;
-    for (int i = 0; i < K; i += 32) {
+    for (int i = 0; i < K; i += BLOCK_DIM) {
         tileA[threadIdx.y][threadIdx.x] = A[row * K + (i + threadIdx.x)];
         tileB[threadIdx.y][threadIdx.x] = B[(i + threadIdx.y) * N + col];
         __syncthreads();
         
-        for (int j = 0; j < 32; j++) {
+        for (int j = 0; j < BLOCK_DIM; j++) {
             sum += tileA[threadIdx.y][j] * tileB[j][threadIdx.x];
         }
         __syncthreads();
